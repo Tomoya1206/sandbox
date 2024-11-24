@@ -22,7 +22,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: upload-whitelist
+          name: updated-whitelist
           path: whitelist.yaml
 
     outputs:
