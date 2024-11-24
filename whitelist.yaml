@@ -1,0 +1,6 @@
+whitelist:
+  componey_a:
+    - location: Tokyo
+      cidrs:
+      - 8.8.8.8/32
+      - 3.3.3.3/32

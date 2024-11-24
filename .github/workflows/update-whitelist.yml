@@ -1,0 +1,55 @@
+name: UpdateWhitelist
+on:
+  push:
+
+jobs:
+  prepare-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout whitelist
+        uses: actions/checkout@v3
+
+      - name: Get commit SHA for whitelist.yaml
+        id: get-sha
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTOUT
+
+      - name: Add comments in whitelist.yaml
+        run: |
+          echo "##This file is generated from whitelist-master https://github.com/tomyamkung/sandbox/blob/${{ steps.get-sha.outputs.sha }}/whitelist.yaml" > temp_whitelist.yaml
+          cat whitelist.yaml >> temp_whitelist.yaml
+          mv temp_whitelist.yaml whitelist.yaml
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload-whitelist
+          path: whitelist.yaml
+
+    outputs:
+      sha: ${{ steps.get_sha.outputs.sha }}
+
+  create-pr:
+    needs: [prepare-pr]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo-config:
+          - target-repo-name: 'test-app-a'
+            destination-path: 'path1/path2'
+          - target-repo-name: 'test-app-b'
+            destination-path: 'path3/path4'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run create-pull-request Action
+        uses: ./github/actions/create-pull-request
+        with:
+          target-repo-org: 'tomyamkung'
+          target-repo-name: ${{ matrix.repo-config.target-repo-name }}
+          branch: 'temp-update-whitelist-${{ needs.prepare-pr.outputs.sha }}'
+          files: 'updated-whitelist'
+          destination-path: ${{ matrix.repo-config.destination-path }}
+          github-token: ${{ secrets.BOT_USER_GITHUB_TOKEN }}
+          github-email: ${{ vars.BOT_USER_GITHUB_EMAIL }}
+          github-name: ${{ vars.BOT_USER_GITHUB_NAME }}

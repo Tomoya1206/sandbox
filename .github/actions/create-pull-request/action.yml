@@ -1,0 +1,76 @@
+name: 'Create Pull Request'
+description: 'Github Actions for Creating PR'
+inputs:
+  target-repo-org:
+    type: string
+    description: 'The target repository org'
+    required: true
+  target-repo-name:
+    type: string
+    description: 'The target repository name'
+    required: true
+  branch:
+    type: string
+    description: 'The branch to checkout'
+    required: true
+  files:
+    type: string
+    description: 'Files to copt to the target repository'
+    required: true
+  destination-path:
+    type: string
+    default: "./"
+    description: 'Destination Path in the target repository.'
+    required: false
+  github-token:
+    type: string
+    description: 'GitHub token to pull this or other repositories in Github'
+    required: true
+  github-email:
+    type: string
+    required: true
+  github-name:
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup authentication
+      run:
+        git config --global user.email "${{ inputs.github-email }}"
+        git config --global user.name "${{ inputs. github-name }}"
+    
+    - name: Checkout target repository
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.target-repo-org }}/${{ inputs.target-repo-name }}
+        path: ${{ inputs.target-repo-name }}
+        token: ${{ inputs.github-token }}
+
+    - name: Checkout temp branch
+      run: |
+        if [ $(git -C ${{ inputs.target-repo-name }} branch -a | grep -e "${{ inputs.branch }}") ]; then
+          git -C ${{ inputs.target-repo-name }} --delete origin ${{ inputs.branch }}
+        fi
+        git -C ${{ inputs.target-repo-name }} checkout -b ${{ inputs.branch }}
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.files }}
+        path: ${{ inputs.target-repo-name }}/${{ inputs.destination-path }}
+
+    - name: Commit changes
+      run: |
+        git -C ${{ inputs.target-repo-name }} add -A
+        git -C ${{ inputs.target-repo-name }} commit -m "Auto Update"
+        git -C ${{ inputs.target-repo-name }} push origin ${{ inputs.branch }}
+
+    - name: Create Pull Request
+      run: |
+        curl -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          -u :${{ inputs.github-token }} \
+          https://api.github.com/repos/tomyamkung/${{ inputs.target-repo-name }}/pulls \
+          --data "{\"title\":\"Automatic pull request.\",\"head\":\"${{ inputs.branch }}\",\"base\":\"main\"}"
