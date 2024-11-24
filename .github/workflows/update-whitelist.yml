@@ -10,12 +10,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Get commit SHA for whitelist.yaml
-        id: get-sha
+        id: get_sha
         run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Add comments in whitelist.yaml
         run: |
-          echo "##This file is generated from whitelist-master https://github.com/tomyamkung/sandbox/blob/${{ steps.get-sha.outputs.sha }}/whitelist.yaml" > temp_whitelist.yaml
+          echo "##This file is generated from whitelist-master https://github.com/tomyamkung/sandbox/blob/${{ steps.get_sha.outputs.sha }}/whitelist.yaml" > temp_whitelist.yaml
           cat whitelist.yaml >> temp_whitelist.yaml
           mv temp_whitelist.yaml whitelist.yaml
 
