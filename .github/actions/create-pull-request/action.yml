@@ -37,6 +37,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup authentication
+      shell: bash
       run:
         git config --global user.email "${{ inputs.github-email }}"
         git config --global user.name "${{ inputs. github-name }}"
@@ -49,6 +50,7 @@ runs:
         token: ${{ inputs.github-token }}
 
     - name: Checkout temp branch
+      shell: bash
       run: |
         if [ $(git -C ${{ inputs.target-repo-name }} branch -a | grep -e "${{ inputs.branch }}") ]; then
           git -C ${{ inputs.target-repo-name }} --delete origin ${{ inputs.branch }}
@@ -62,12 +64,14 @@ runs:
         path: ${{ inputs.target-repo-name }}/${{ inputs.destination-path }}
 
     - name: Commit changes
+      shell: bash
       run: |
         git -C ${{ inputs.target-repo-name }} add -A
         git -C ${{ inputs.target-repo-name }} commit -m "Auto Update"
         git -C ${{ inputs.target-repo-name }} push origin ${{ inputs.branch }}
 
     - name: Create Pull Request
+      shell: bash
       run: |
         curl -X POST \
           -H "Accept: application/vnd.github.v3+json" \
