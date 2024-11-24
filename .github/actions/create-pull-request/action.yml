@@ -38,7 +38,7 @@ runs:
   steps:
     - name: Setup authentication
       shell: bash
-      run:
+      run: |
         git config --global user.email "${{ inputs.github-email }}"
         git config --global user.name "${{ inputs. github-name }}"
     
