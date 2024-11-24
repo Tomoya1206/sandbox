@@ -11,7 +11,7 @@ jobs:
 
       - name: Get commit SHA for whitelist.yaml
         id: get-sha
-        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTOUT
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Add comments in whitelist.yaml
         run: |
